@@ -56,7 +56,7 @@
     <v-app-bar dark color="primary">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
 
-      <v-toolbar-title class="white--text">INEZ</v-toolbar-title>
+      <v-toolbar-title class="white--text">Space Invaders</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
@@ -66,36 +66,36 @@
 </template>
 
 <script>
-    import firebase from 'firebase'
-    export default {
-        name: 'Toolbar',
-        data () {
-            return {
-                items: [
-                    { title: 'Dashboard', icon: 'dashboard', href: '/' },
-                    { title: 'Nachrichten', icon: 'sms', href: '/chats' },
-                    { title: 'Meine Angebote', icon: 'apps', href: '/offers' },
-                    { title: 'Meine Produkte', icon: 'list', href: '/products' },
-                    { title: 'Meine Kunden', icon: 'people', href: '/customers' }
-                ],
-                drawer: false,
-                displayName: '',
-                profilePic: ''
-            }
-        },
-        mounted () {
-            if (firebase.auth().currentUser) {
-                firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).get().then(user => {
-                    this.displayName = user.data().displayname
-                })
-                firebase.storage().ref().child('images/users/' + firebase.auth().currentUser.uid).getDownloadURL()
-                    .then((url) => {
-                        this.profilePic = url
-                    }).catch(() => {
-                })
-            }
-        }
+import firebase from 'firebase'
+export default {
+  name: 'Toolbar',
+  data () {
+    return {
+      items: [
+        { title: 'Dashboard', icon: 'dashboard', href: '/' },
+        { title: 'Nachrichten', icon: 'sms', href: '/chats' },
+        { title: 'Meine Angebote', icon: 'apps', href: '/offers' },
+        { title: 'Meine Produkte', icon: 'list', href: '/products' },
+        { title: 'Meine Kunden', icon: 'people', href: '/customers' }
+      ],
+      drawer: false,
+      displayName: '',
+      profilePic: ''
     }
+  },
+  mounted () {
+    if (firebase.auth().currentUser) {
+      firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).get().then(user => {
+        this.displayName = user.data().displayname
+      })
+      firebase.storage().ref().child('images/users/' + firebase.auth().currentUser.uid).getDownloadURL()
+        .then((url) => {
+          this.profilePic = url
+        }).catch(() => {
+        })
+    }
+  }
+}
 </script>
 
 <style scoped>
