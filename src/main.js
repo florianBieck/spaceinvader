@@ -23,15 +23,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig)
 
 router.beforeEach((to, from, next) => {
-  /* firebase.auth().onAuthStateChanged(user => {
+  firebase.auth().onAuthStateChanged(user => {
     if (to.matched.some(record => record.meta.requiresAuth) && !user) {
-      store.commit('clearFirestoreListeners')
+      // store.commit('clearFirestoreListeners')
       next({ name: 'Login' })
     } else {
       next()
     }
-  }) */
-  next()
+  })
 })
 
 new Vue({

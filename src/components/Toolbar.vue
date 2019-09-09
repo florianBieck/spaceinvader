@@ -73,10 +73,7 @@ export default {
     return {
       items: [
         { title: 'Dashboard', icon: 'dashboard', href: '/' },
-        { title: 'Nachrichten', icon: 'sms', href: '/chats' },
-        { title: 'Meine Angebote', icon: 'apps', href: '/offers' },
-        { title: 'Meine Produkte', icon: 'list', href: '/products' },
-        { title: 'Meine Kunden', icon: 'people', href: '/customers' }
+        { title: 'Nachrichten', icon: 'sms', href: '/chats' }
       ],
       drawer: false,
       displayName: '',
