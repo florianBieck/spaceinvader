@@ -58,7 +58,16 @@ export default new Router({
       component: () => import('./views/Game.vue'),
       meta: {
         layout: 'default',
-        requiresAuth: false
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/highscore',
+      name: 'Highscore',
+      component: () => import('./views/Highscore.vue'),
+      meta: {
+        layout: 'default',
+        requiresAuth: true
       }
     }
   ]

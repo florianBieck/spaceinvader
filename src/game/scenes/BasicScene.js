@@ -23,15 +23,22 @@ export default class BasicScene extends Scene {
   }
 
   create () {
-    this.width = 1900
-    this.height = 900
+    this.border = 16
+    this.width = this.scale.width
+    this.height = this.scale.height
     this.sizeRocket = 96
     this.sizeMissle = 32
-    this.sizeExplosionMissle = 16
+    this.sizeExplosionMissle = 64
     this.sizeHeart = 32
 
     this.maxHealth = 5
     this.health = this.maxHealth
+
+    this.overheatMax = 10
+    this.overheat = 0
+    this.sizeOverheat = 24
+
+    this.score = 0
 
     this.background = this.add.image(0, 0, 'background')
     this.background.setDisplaySize(innerWidth, innerHeight)
@@ -43,16 +50,31 @@ export default class BasicScene extends Scene {
     this.rocket.setAngle(-90)
     this.rocket.setCollideWorldBounds(true, 0, 0)
     this.rocket.setData('speed', 10)
+    this.rocket.setData('blockwidth', 1)
+    this.rocket.setData('blockheight', 1)
 
     this.left = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.LEFT)
     this.right = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.RIGHT)
     this.space = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.SPACE)
+    this.esc = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.ESC)
+
+    this.scoreText = this.add.text(this.border, this.border, 'SCORE: 0')
 
     this.hearts = this.physics.add.group()
-    for (var i = 0; i < this.health; i++) {
+    for (let i = 0; i < this.health; i++) {
       const heart = this.hearts.create(this.width - (this.sizeHeart * this.maxHealth) + (i * this.sizeHeart),
         this.height - (this.sizeHeart / 2), 'heart')
+      heart.setData('blockwidth', 1)
+      heart.setData('blockheight', 1)
       heart.setDisplaySize(this.sizeHeart, this.sizeHeart)
+    }
+
+    this.overheating = this.physics.add.group()
+    for (let i = 0; i < this.overheatMax; i++) {
+      const oh = this.overheating.create(this.border + (i * this.sizeOverheat), this.height - (this.sizeOverheat / 2), 'heartEmpty')
+      oh.setData('blockwidth', 1)
+      oh.setData('blockheight', 1)
+      oh.setDisplaySize(this.sizeOverheat, this.sizeOverheat)
     }
 
     this.missles = this.physics.add.group()
@@ -67,6 +89,50 @@ export default class BasicScene extends Scene {
       callbackScope: this,
       loop: true
     })
+
+    this.time.addEvent({
+      delay: 100,
+      callback: this.scoring,
+      callbackScope: this,
+      loop: true
+    })
+  }
+
+  scoring () {
+    this.score++
+    this.scoreText.setText('SCORE: ' + this.score)
+  }
+
+  resizeAndRelocate () {
+    const width = this.scale.width
+    const height = this.scale.height
+    const blockwidth = width / 20
+    const blockheight = height / 15
+
+    // Background
+    this.background.setDisplaySize(width, height)
+
+    // Rocket
+    this.rocket.setDisplaySize(blockwidth * this.rocket.data.get('blockwidth'),
+      blockheight * this.rocket.data.get('blockheight'))
+
+    // Hearts
+    for (var i = 0; i < this.hearts.children.size; i++) {
+      const heart = this.hearts.children.entries[i]
+      heart.setDisplaySize(blockwidth * heart.data.get('blockwidth'), blockheight * heart.data.get('blockheight'))
+      heart.setPosition(width - (blockwidth * heart.data.get('blockwidth') * this.maxHealth) + (i * blockwidth * heart.data.get('blockwidth')),
+        height - (blockheight * heart.data.get('blockheight') / 2))
+    }
+
+    // Missles
+    this.missles.getChildren().forEach(missle => {
+      missle.setDisplaySize(blockwidth * missle.data.get('blockwidth'), blockheight * missle.data.get('blockheight'))
+    })
+
+    // Enemies
+    this.enemies.getChildren().forEach(enemy => {
+      enemy.setDisplaySize(blockwidth * enemy.data.get('blockwidth'), blockheight * enemy.data.get('blockheight'))
+    })
   }
 
   moveRocket (x, y) {
@@ -74,20 +140,27 @@ export default class BasicScene extends Scene {
   }
 
   shootMissle () {
-    if (!this.cooldownMissle) {
+    if (!this.cooldownMissle && this.overheat <= this.overheatMax) {
       const missle = this.missles.create(this.rocket.x, this.rocket.y - (this.sizeRocket / 2), 'missle')
       missle.setDisplaySize(this.sizeMissle, this.sizeMissle)
       missle.setAngle(-45)
       missle.setData('speed', -500)
       missle.setVelocityY(missle.data.get('speed'))
       this.cooldownMissle = true
+      this.overheat++
       // eslint-disable-next-line no-return-assign
       setTimeout(() => this.cooldownMissle = false, 200)
+      setTimeout(() => {
+        if (this.overheat > 0) {
+          this.overheat--
+        }
+      }, this.overheat * 500)
     }
   }
 
   hitMissleEnemy (missle, enemy) {
     missle.destroy(true)
+    this.score += enemy.data.get('scoreOnHit')
 
     const explosionMissle = this.physics.add.image(enemy.x, enemy.y - (this.sizeExplosionMissle / 2), 'explodeMissle')
     explosionMissle.setDisplaySize(this.sizeExplosionMissle, this.sizeExplosionMissle)
@@ -98,6 +171,7 @@ export default class BasicScene extends Scene {
 
     enemy.setData('health', enemy.data.get('health') - 1)
     if (enemy.data.get('health') <= 0) {
+      this.score += enemy.data.get('scoreOnKill')
       enemy.destroy(true)
     }
   }
@@ -108,36 +182,77 @@ export default class BasicScene extends Scene {
     enemy.setDisplaySize(this.sizeRocket, this.sizeRocket)
     enemy.setAngle(180)
     enemy.setData('speed', this.sizeRocket)
-    enemy.setData('health', 5)
+    enemy.setData('health', 3)
+    enemy.setData('scoreOnHit', 3)
+    enemy.setData('scoreOnKill', 50)
+    enemy.setAccelerationY(20)
+    enemy.setVelocityY(Math.floor(Math.random() * 300))
   }
 
   moveEnemies () {
     this.enemies.getChildren().forEach(enemy => {
-      enemy.setPosition(enemy.x, enemy.y + enemy.data.get('speed'))
-      if (enemy.y >= this.height) {
-        this.hearts.getChildren()[this.health - 1].destroy(true)
-        this.health = this.health - 1
-        enemy.destroy(true)
-        this.spawnEnemy()
-      }
-      if (this.health <= 0) {
-        this.physics.pause()
-      }
+      // enemy.setPosition(enemy.x, enemy.y + enemy.data.get('speed'))
     })
     if (Math.floor(Math.random() * 10) < 2) {
       this.spawnEnemy()
     }
   }
 
+  isPaused () {
+    return this.scene.isPaused()
+  }
+
+  resume () {
+    this.scene.resume()
+    this.esc.reset()
+  }
+
   update (time, delta) {
     if (this.left.isDown) {
-      this.moveRocket(-1 * this.rocket.data.get('speed'), 0)
+      if (this.rocket.body.velocity.x < 0) {
+        this.rocket.setAccelerationX(this.rocket.body.velocity.x - 50)
+      } else if (this.rocket.body.velocity.x === 0) {
+        this.rocket.setVelocityX(-200)
+      }
     }
     if (this.right.isDown) {
-      this.moveRocket(this.rocket.data.get('speed'), 0)
+      if (this.rocket.body.velocity.x > 0) {
+        this.rocket.setAccelerationX(this.rocket.body.velocity.x + 50)
+      } else if (this.rocket.body.velocity.x === 0) {
+        this.rocket.setVelocityX(200)
+      }
+    }
+    if (!this.right.isDown && !this.left.isDown) {
+      this.rocket.setVelocityX(0)
+      this.rocket.setAccelerationX(0)
     }
     if (this.space.isDown) {
       this.shootMissle()
+    }
+    if (this.esc.isDown) {
+      this.scene.pause('BasicScene')
+    }
+
+    for (let i = 0; i < this.overheating.children.size; i++) {
+      if (i < this.overheat) {
+        this.overheating.children.entries[i].setTexture('heartEmpty')
+      } else {
+        this.overheating.children.entries[i].setTexture('heart')
+      }
+    }
+
+    this.enemies.getChildren().forEach(enemy => {
+      if (enemy.y >= this.height) {
+        this.hearts.getChildren()[this.health - 1].destroy(true)
+        this.health = this.health - 1
+        enemy.destroy(true)
+        this.spawnEnemy()
+      }
+    })
+    if (this.health <= 0) {
+      this.physics.pause()
+      this.sys.pause()
+      this.missles.getChildren().forEach(missle => missle.destroy(true))
     }
   }
 }

@@ -1,23 +1,24 @@
 import BasicScene from './scenes/BasicScene'
 import * as Phaser from 'phaser'
 
+const gameConfig = {
+  type: Phaser.AUTO,
+  scale: {
+    parent: 'game-container',
+    mode: Phaser.Scale.RESIZE
+  },
+  physics: {
+    default: 'arcade',
+    arcade: {
+      debug: false
+    }
+  },
+  scene: [BasicScene]
+}
+
 function launch () {
-  this.game = new Phaser.Game({
-    type: Phaser.AUTO,
-    scale: {
-      width: 1900,
-      height: 900,
-      mode: Phaser.Scale.FIT,
-      parent: 'game-container',
-      autoCenter: Phaser.Scale.CENTER_BOTH
-    },
-    physics: {
-      default: 'arcade',
-      arcade: {
-        debug: false
-      }
-    },
-    scene: [BasicScene]
+  return new Promise(resolve => {
+    resolve(new Phaser.Game(gameConfig))
   })
 }
 

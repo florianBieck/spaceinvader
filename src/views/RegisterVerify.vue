@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-card>
-      <v-card-title class="teal white--text">
+      <v-card-title class="black white--text">
         <h4 class="display-1">Registrierung</h4>
       </v-card-title>
       <v-container class="text-xs-center">
@@ -9,7 +9,7 @@
       </v-container>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn class="teal white--text" to="/login">Zum Login</v-btn>
+        <v-btn class="black white--text" to="/login">Zum Login</v-btn>
         <v-spacer></v-spacer>
       </v-card-actions>
     </v-card>
