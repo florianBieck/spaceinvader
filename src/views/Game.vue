@@ -38,12 +38,10 @@ export default {
     }
   },
   async mounted () {
-    this.main = await import('../game/Game')
+    const main = await import('../game/Game')
     this.preloading = false
     this.$nextTick(() => {
-      this.main.launch().then(game => {
-        this.game = game
-      })
+      this.game = main.launch()
     })
   },
   computed: {
@@ -108,7 +106,7 @@ export default {
   },
   methods: {
     startGame () {
-      this.scene.start('BasicScene')
+      //this.scene.start('BasicScene')
     },
     resumeGame () {
       this.basicScene.resume()

@@ -44,6 +44,15 @@ export default new Router({
       }
     },
     {
+      path: '/registerverified',
+      name: 'RegisterVerified',
+      component: () => import('./views/RegisterVerified.vue'),
+      meta: {
+        layout: 'none',
+        requiresAuth: false
+      }
+    },
+    {
       path: '/',
       name: 'Home',
       component: () => import('./views/Home.vue'),
@@ -68,6 +77,25 @@ export default new Router({
       meta: {
         layout: 'default',
         requiresAuth: true
+      }
+    },
+    {
+      path: '/profile',
+      name: 'MyProfile',
+      component: () => import('./views/Profile.vue'),
+      meta: {
+        requiresAuth: true,
+        layout: 'default'
+      }
+    },
+    {
+      path: '/profile/:iduser',
+      name: 'Profile',
+      props: true,
+      component: () => import('./views/Profile.vue'),
+      meta: {
+        requiresAuth: true,
+        layout: 'default'
       }
     }
   ]

@@ -24,7 +24,7 @@
                 </v-container>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn block :loading="loading" class="black white--text" v-on:click="register">Registrieren</v-btn>
+                  <v-btn block :loading="loading" :disabled="loading" class="black white--text" v-on:click="register">Registrieren</v-btn>
                   <v-spacer></v-spacer>
                 </v-card-actions>
               </v-card>
@@ -38,41 +38,41 @@
 
 <script>
 
-  import firebase from 'firebase'
+import firebase from 'firebase'
 
-  export default {
-    name: 'Register',
-    data: () => ({
-      email: '',
-      password: '',
-      passwordCheck: '',
-      error: '',
-      loading: false,
-      remember: false
-    }),
-    computed: {
-      getPersistence () {
-        return this.remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION
-      }
-    },
-    methods: {
-      register () {
-        if (this.password === this.passwordCheck) {
-          this.loading = true
-          firebase.auth().createUserWithEmailAndPassword(this.email, this.password).then(result => {
-            if (!result.user.emailVerified) {
-              result.user.sendEmailVerification()
-            }
-            this.$router.push('/registerverify')
-          }).catch(error => {
-            if (error.code === 'auth/email-already-in-use') {
-              this.error = 'Es ist bereits ein Konto mit dieser E-Mail Adresse vorhanden.'
-            }
-          }).finally(() => {
-            this.loading = false
-          })
-        }
+export default {
+  name: 'Register',
+  data: () => ({
+    email: '',
+    password: '',
+    passwordCheck: '',
+    error: '',
+    loading: false,
+    remember: false
+  }),
+  computed: {
+    getPersistence () {
+      return this.remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION
+    }
+  },
+  methods: {
+    register () {
+      if (this.password === this.passwordCheck) {
+        this.loading = true
+        firebase.auth().createUserWithEmailAndPassword(this.email, this.password).then(result => {
+          if (!result.user.emailVerified) {
+            result.user.sendEmailVerification()
+          }
+          this.$router.push('/registerverify')
+        }).catch(error => {
+          if (error.code === 'auth/email-already-in-use') {
+            this.error = 'Es ist bereits ein Konto mit dieser E-Mail Adresse vorhanden.'
+          }
+        }).finally(() => {
+          this.loading = false
+        })
       }
     }
   }
+}
 </script>

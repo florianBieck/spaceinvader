@@ -28,7 +28,7 @@
                 </v-container>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn block :loading="loading" class="black white--text" v-on:click="login">Login</v-btn>
+                  <v-btn block :loading="loading" :disabled="loading" class="black white--text" v-on:click="login">Login</v-btn>
                   <v-spacer></v-spacer>
                 </v-card-actions>
               </v-card>
@@ -42,49 +42,49 @@
 
 <script>
 
-  import firebase from 'firebase'
+import firebase from 'firebase'
 
-  export default {
-    name: 'Home',
-    data: () => ({
-      email: '',
-      password: '',
-      error: '',
-      loading: false,
-      remember: false
-    }),
-    computed: {
-      getPersistence () {
-        return this.remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION
-      }
-    },
-    methods: {
-      login () {
-        if (this.email !== '' && this.password !== '') {
-          this.loading = true
-          firebase.auth().setPersistence(this.getPersistence)
-            .then(() => {
-              return firebase.auth().signInWithEmailAndPassword(this.email, this.password)
-            })
-            .catch(result => {
-              console.error(result)
-              this.error = 'Falsche Anmeldedaten.'
+export default {
+  name: 'Home',
+  data: () => ({
+    email: '',
+    password: '',
+    error: '',
+    loading: false,
+    remember: false
+  }),
+  computed: {
+    getPersistence () {
+      return this.remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION
+    }
+  },
+  methods: {
+    login () {
+      if (this.email !== '' && this.password !== '') {
+        this.loading = true
+        firebase.auth().setPersistence(this.getPersistence)
+          .then(() => {
+            return firebase.auth().signInWithEmailAndPassword(this.email, this.password)
+          })
+          .catch(result => {
+            console.error(result)
+            this.error = 'Falsche Anmeldedaten.'
+            this.loading = false
+          })
+          .then(result => {
+            if (!result.user.emailVerified) {
+              this.error = 'E-Mail Adresse nicht verifiziert.'
               this.loading = false
-            })
-            .then(result => {
-              if (!result.user.emailVerified) {
-                this.error = 'E-Mail Adresse nicht verifiziert.'
-                this.loading = false
-              } else {
-                this.error = ''
-                this.$router.push('/')
-              }
-            })
-        } else {
-          this.error = 'Bitte E-Mail und Passwort eingeben.'
-          this.loading = false
-        }
+            } else {
+              this.error = ''
+              this.$router.push('/')
+            }
+          })
+      } else {
+        this.error = 'Bitte E-Mail und Passwort eingeben.'
+        this.loading = false
       }
     }
   }
+}
 </script>

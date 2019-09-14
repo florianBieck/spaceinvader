@@ -8,10 +8,10 @@
             <v-flex md8 sm8 xs12>
               <v-card>
                 <v-card-title class="black white--text">
-                  <h4 class="headline">Registrierung abschließen</h4>
+                  <h4 class="headline">E-Mail Verifizierung</h4>
                 </v-card-title>
                 <v-container>
-                  Bitte bestätigen Sie Ihre E-Mail Adresse, um die Registrierung abzuschließen.
+                  Ihr E-Mail Adresse wurde erfolgreich verifiziert. Sie werden automatisch zum Login weitergeleitet.
                 </v-container>
                 <v-card-actions>
                   <v-spacer></v-spacer>
@@ -19,7 +19,7 @@
                   <v-spacer></v-spacer>
                 </v-card-actions>
               </v-card>
-            </v-flex>
+            </v-flex>fire
           </v-layout>
         </v-container>
       </v-row>
@@ -28,7 +28,29 @@
 </template>
 
 <script>
+import firebase from 'firebase'
 export default {
-  name: 'RegisterVerify'
+  name: 'RegisterVerified',
+  mounted () {
+    var mode = null
+    var oobCode = null
+    var apiKey = null
+    var tmp = []
+    location.search
+      .substr(1)
+      .split('&')
+      .forEach(function (item) {
+        tmp = item.split('=')
+        if (tmp[0] === 'mode') mode = decodeURIComponent(tmp[1])
+        if (tmp[0] === 'oobCode') oobCode = decodeURIComponent(tmp[1])
+        if (tmp[0] === 'apiKey') apiKey = decodeURIComponent(tmp[1])
+      })
+    if (mode === 'verifyEmail') {
+      firebase.auth().applyActionCode(oobCode).then(res => {
+        console.log(res)
+        this.$router.push('/login')
+      })
+    }
+  }
 }
 </script>

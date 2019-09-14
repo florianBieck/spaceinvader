@@ -17,9 +17,7 @@ const gameConfig = {
 }
 
 function launch () {
-  return new Promise(resolve => {
-    resolve(new Phaser.Game(gameConfig))
-  })
+  return new Phaser.Game(gameConfig)
 }
 
 export default launch

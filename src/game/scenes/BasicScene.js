@@ -6,6 +6,8 @@ import enemyImage from '../../assets/icons8-fighter.svg'
 import explodeMissleImage from '../../assets/icons8-explosion.svg'
 import heartImage from '../../assets/icons8-heart.svg'
 import heartEmptyImage from '../../assets/icons8-heart-empty.svg'
+import fireImage from '../../assets/icons8-fire.svg'
+import fireEmptyImage from '../../assets/icons8-fire-empty.svg'
 
 export default class BasicScene extends Scene {
   constructor () {
@@ -20,6 +22,8 @@ export default class BasicScene extends Scene {
     this.load.image('explodeMissle', explodeMissleImage)
     this.load.image('heart', heartImage)
     this.load.image('heartEmpty', heartEmptyImage)
+    this.load.image('fire', fireImage)
+    this.load.image('fireEmpty', fireEmptyImage)
   }
 
   create () {
@@ -71,7 +75,7 @@ export default class BasicScene extends Scene {
 
     this.overheating = this.physics.add.group()
     for (let i = 0; i < this.overheatMax; i++) {
-      const oh = this.overheating.create(this.border + (i * this.sizeOverheat), this.height - (this.sizeOverheat / 2), 'heartEmpty')
+      const oh = this.overheating.create(this.border + (i * this.sizeOverheat), this.height - (this.sizeOverheat / 2), 'fireEmpty')
       oh.setData('blockwidth', 1)
       oh.setData('blockheight', 1)
       oh.setDisplaySize(this.sizeOverheat, this.sizeOverheat)
@@ -203,7 +207,7 @@ export default class BasicScene extends Scene {
   }
 
   resume () {
-    this.scene.resume()
+    // this.scene.resume()
     this.esc.reset()
   }
 
@@ -235,9 +239,9 @@ export default class BasicScene extends Scene {
 
     for (let i = 0; i < this.overheating.children.size; i++) {
       if (i < this.overheat) {
-        this.overheating.children.entries[i].setTexture('heartEmpty')
+        this.overheating.children.entries[i].setTexture('fire')
       } else {
-        this.overheating.children.entries[i].setTexture('heart')
+        this.overheating.children.entries[i].setTexture('fireEmpty')
       }
     }
 
