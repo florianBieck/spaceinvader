@@ -1,6 +1,5 @@
 import { Scene, Input } from 'phaser'
 import backgroundImage from '../../assets/logo.svg'
-import rocketImage from '../../assets/icons8-space-shuttle.svg'
 import missleImage from '../../assets/icons8-missile.svg'
 import enemyImage from '../../assets/icons8-fighter.svg'
 import explodeMissleImage from '../../assets/icons8-explosion.svg'
@@ -8,6 +7,16 @@ import heartImage from '../../assets/icons8-heart.svg'
 import heartEmptyImage from '../../assets/icons8-heart-empty.svg'
 import fireImage from '../../assets/icons8-fire.svg'
 import fireEmptyImage from '../../assets/icons8-fire-empty.svg'
+import rocketImage from '../../assets/icons8-space-shuttle.svg'
+import Rocket from '../objects/Rocket'
+import Missle from '../objects/Missle'
+import Enemy from '../objects/Enemy'
+import HealthPoint from '../objects/HealthPoint'
+import OverheatPoint from '../objects/OverheatPoint'
+import Background from '../objects/Background'
+import ExplosionMissle from '../objects/ExplosionMissle'
+import OverheatPoints from '../objects/OverheatPoints'
+import HealthPoints from '../objects/HealthPoints'
 
 export default class BasicScene extends Scene {
   constructor () {
@@ -27,12 +36,9 @@ export default class BasicScene extends Scene {
   }
 
   create () {
-    this.border = 16
+    this.border = 12
     this.width = this.scale.width
     this.height = this.scale.height
-    this.sizeRocket = 96
-    this.sizeMissle = 32
-    this.sizeExplosionMissle = 64
     this.sizeHeart = 32
 
     this.maxHealth = 5
@@ -40,46 +46,30 @@ export default class BasicScene extends Scene {
 
     this.overheatMax = 10
     this.overheat = 0
-    this.sizeOverheat = 24
 
     this.score = 0
-
-    this.background = this.add.image(0, 0, 'background')
-    this.background.setDisplaySize(innerWidth, innerHeight)
-    this.background.setPosition(400, 300)
-    this.background.setVisible(false)
-
-    this.rocket = this.physics.add.image(this.width / 2, this.height - (this.sizeRocket / 2), 'rocket')
-    this.rocket.setDisplaySize(this.sizeRocket, this.sizeRocket)
-    this.rocket.setAngle(-90)
-    this.rocket.setCollideWorldBounds(true, 0, 0)
-    this.rocket.setData('speed', 10)
-    this.rocket.setData('blockwidth', 1)
-    this.rocket.setData('blockheight', 1)
+    this.level = 0
 
     this.left = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.LEFT)
     this.right = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.RIGHT)
     this.space = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.SPACE)
     this.esc = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.ESC)
+    this.ctrl = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.CTRL)
+
+    this.background = new Background(this, this.width, this.height)
+    this.add.existing(this.background)
+
+    this.rocket = new Rocket(this, this.width, this.height)
 
     this.scoreText = this.add.text(this.border, this.border, 'SCORE: 0')
+    this.scoringTexts = []
 
-    this.hearts = this.physics.add.group()
-    for (let i = 0; i < this.health; i++) {
-      const heart = this.hearts.create(this.width - (this.sizeHeart * this.maxHealth) + (i * this.sizeHeart),
-        this.height - (this.sizeHeart / 2), 'heart')
-      heart.setData('blockwidth', 1)
-      heart.setData('blockheight', 1)
-      heart.setDisplaySize(this.sizeHeart, this.sizeHeart)
-    }
+    this.levelText = this.add.text(this.width, this.border, 'LEVEL: 0')
+    this.increaseLevel(1)
 
-    this.overheating = this.physics.add.group()
-    for (let i = 0; i < this.overheatMax; i++) {
-      const oh = this.overheating.create(this.border + (i * this.sizeOverheat), this.height - (this.sizeOverheat / 2), 'fireEmpty')
-      oh.setData('blockwidth', 1)
-      oh.setData('blockheight', 1)
-      oh.setDisplaySize(this.sizeOverheat, this.sizeOverheat)
-    }
+    this.hearts = new HealthPoints(this, this.width, this.height, this.maxHealth)
+
+    this.overheatingPoints = new OverheatPoints(this, this.border, this.height, this.overheatMax)
 
     this.missles = this.physics.add.group()
     this.enemies = this.physics.add.group()
@@ -87,69 +77,35 @@ export default class BasicScene extends Scene {
     collideMissleEnemy.overlapOnly = true
     this.spawnEnemy()
 
-    this.time.addEvent({
-      delay: 1000,
-      callback: this.moveEnemies,
-      callbackScope: this,
-      loop: true
-    })
-
-    this.time.addEvent({
-      delay: 100,
-      callback: this.scoring,
-      callbackScope: this,
-      loop: true
-    })
+    this.time.addEvent({ delay: 1000, callback: this.moveEnemies, callbackScope: this, loop: true })
+    this.time.addEvent({ delay: 100, callback: this.scoreOne, callbackScope: this, loop: true })
   }
 
-  scoring () {
+  scoreOne () {
     this.score++
     this.scoreText.setText('SCORE: ' + this.score)
   }
 
-  resizeAndRelocate () {
-    const width = this.scale.width
-    const height = this.scale.height
-    const blockwidth = width / 20
-    const blockheight = height / 15
-
-    // Background
-    this.background.setDisplaySize(width, height)
-
-    // Rocket
-    this.rocket.setDisplaySize(blockwidth * this.rocket.data.get('blockwidth'),
-      blockheight * this.rocket.data.get('blockheight'))
-
-    // Hearts
-    for (var i = 0; i < this.hearts.children.size; i++) {
-      const heart = this.hearts.children.entries[i]
-      heart.setDisplaySize(blockwidth * heart.data.get('blockwidth'), blockheight * heart.data.get('blockheight'))
-      heart.setPosition(width - (blockwidth * heart.data.get('blockwidth') * this.maxHealth) + (i * blockwidth * heart.data.get('blockwidth')),
-        height - (blockheight * heart.data.get('blockheight') / 2))
-    }
-
-    // Missles
-    this.missles.getChildren().forEach(missle => {
-      missle.setDisplaySize(blockwidth * missle.data.get('blockwidth'), blockheight * missle.data.get('blockheight'))
-    })
-
-    // Enemies
-    this.enemies.getChildren().forEach(enemy => {
-      enemy.setDisplaySize(blockwidth * enemy.data.get('blockwidth'), blockheight * enemy.data.get('blockheight'))
-    })
+  increaseLevel (level) {
+    this.level += level
+    this.levelText.setText('LEVEL: ' + this.level)
+    this.levelText.setX(this.width - this.border * this.levelText.text.length)
   }
 
-  moveRocket (x, y) {
-    this.rocket.setPosition(this.rocket.x + x, this.rocket.y + y)
+  scoring (score) {
+    this.score += score
+    this.scoreText.setText('SCORE: ' + this.score)
+    const scoringText = this.add.text(this.border * 2, this.border * 2, '+' + score)
+    this.scoringTexts.push(scoringText)
+    // eslint-disable-next-line no-return-assign
+    setTimeout(() => scoringText.destroy(true), 1000)
   }
 
   shootMissle () {
     if (!this.cooldownMissle && this.overheat <= this.overheatMax) {
-      const missle = this.missles.create(this.rocket.x, this.rocket.y - (this.sizeRocket / 2), 'missle')
-      missle.setDisplaySize(this.sizeMissle, this.sizeMissle)
-      missle.setAngle(-45)
-      missle.setData('speed', -500)
-      missle.setVelocityY(missle.data.get('speed'))
+      const missle = new Missle(this, this.rocket.body, this.rocket.size)
+      this.missles.add(missle)
+      missle.move()
       this.cooldownMissle = true
       this.overheat++
       // eslint-disable-next-line no-return-assign
@@ -164,42 +120,21 @@ export default class BasicScene extends Scene {
 
   hitMissleEnemy (missle, enemy) {
     missle.destroy(true)
-    this.score += enemy.data.get('scoreOnHit')
+    this.scoring(enemy.data.get('scoreOnHit'))
 
-    const explosionMissle = this.physics.add.image(enemy.x, enemy.y - (this.sizeExplosionMissle / 2), 'explodeMissle')
-    explosionMissle.setDisplaySize(this.sizeExplosionMissle, this.sizeExplosionMissle)
-    explosionMissle.setAngle(0)
-    explosionMissle.setBounce(0, 0)
-    // eslint-disable-next-line no-return-assign
-    setTimeout(() => explosionMissle.destroy(true), 200)
+    new ExplosionMissle(this, enemy)
 
     enemy.setData('health', enemy.data.get('health') - 1)
     if (enemy.data.get('health') <= 0) {
-      this.score += enemy.data.get('scoreOnKill')
+      this.scoring(enemy.data.get('scoreOnKill'))
       enemy.destroy(true)
     }
   }
 
   spawnEnemy () {
-    const enemy = this.enemies.create(Math.floor(Math.random() * (this.width - this.sizeRocket)) + (this.sizeRocket / 2),
-      this.sizeRocket / 2, 'enemy')
-    enemy.setDisplaySize(this.sizeRocket, this.sizeRocket)
-    enemy.setAngle(180)
-    enemy.setData('speed', this.sizeRocket)
-    enemy.setData('health', 3)
-    enemy.setData('scoreOnHit', 3)
-    enemy.setData('scoreOnKill', 50)
-    enemy.setAccelerationY(20)
-    enemy.setVelocityY(Math.floor(Math.random() * 300))
-  }
-
-  moveEnemies () {
-    this.enemies.getChildren().forEach(enemy => {
-      // enemy.setPosition(enemy.x, enemy.y + enemy.data.get('speed'))
-    })
-    if (Math.floor(Math.random() * 10) < 2) {
-      this.spawnEnemy()
-    }
+    const enemy = new Enemy(this, this.width)
+    this.enemies.add(enemy)
+    enemy.move()
   }
 
   isPaused () {
@@ -211,52 +146,58 @@ export default class BasicScene extends Scene {
     this.esc.reset()
   }
 
+  gameOver () {
+    this.physics.pause()
+    this.sys.pause()
+    this.missles.getChildren().forEach(missle => missle.destroy(true))
+  }
+
   update (time, delta) {
     if (this.left.isDown) {
-      if (this.rocket.body.velocity.x < 0) {
-        this.rocket.setAccelerationX(this.rocket.body.velocity.x - 50)
-      } else if (this.rocket.body.velocity.x === 0) {
-        this.rocket.setVelocityX(-200)
-      }
+      this.rocket.moveLeft()
     }
     if (this.right.isDown) {
-      if (this.rocket.body.velocity.x > 0) {
-        this.rocket.setAccelerationX(this.rocket.body.velocity.x + 50)
-      } else if (this.rocket.body.velocity.x === 0) {
-        this.rocket.setVelocityX(200)
-      }
+      this.rocket.moveRight()
     }
     if (!this.right.isDown && !this.left.isDown) {
-      this.rocket.setVelocityX(0)
-      this.rocket.setAccelerationX(0)
+      this.rocket.moveStop()
     }
     if (this.space.isDown) {
       this.shootMissle()
     }
     if (this.esc.isDown) {
       this.scene.pause('BasicScene')
+      this.esc.reset()
+    }
+    if (this.ctrl.isDown) {
+      this.ctrl.reset()
     }
 
-    for (let i = 0; i < this.overheating.children.size; i++) {
-      if (i < this.overheat) {
-        this.overheating.children.entries[i].setTexture('fire')
-      } else {
-        this.overheating.children.entries[i].setTexture('fireEmpty')
-      }
-    }
+    this.scoringTexts.forEach(scoringText => {
+      scoringText.setY(scoringText.y + 2)
+    })
 
     this.enemies.getChildren().forEach(enemy => {
       if (enemy.y >= this.height) {
-        this.hearts.getChildren()[this.health - 1].destroy(true)
         this.health = this.health - 1
+        const tint = this.rocket.tint
+        this.rocket.setTint(0xff0000)
+        // eslint-disable-next-line no-return-assign
+        setTimeout(() => this.rocket.setTint(tint), 100)
         enemy.destroy(true)
         this.spawnEnemy()
       }
     })
-    if (this.health <= 0) {
-      this.physics.pause()
-      this.sys.pause()
-      this.missles.getChildren().forEach(missle => missle.destroy(true))
+
+    if (Math.floor(Math.random() * 4000) < 2) {
+      this.spawnEnemy()
     }
+
+    if (this.health <= 0) {
+      this.gameOver()
+    }
+
+    this.overheatingPoints.retexture(this.overheat)
+    this.hearts.retexture(this.health)
   }
 }

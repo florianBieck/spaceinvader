@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-0">
+  <v-container fluid class="pa-0" v-on:click="focus">
     <v-container fluid v-if="preloading">{{preloadMsg}}</v-container>
     <v-container class="pa-0" fluid v-else id="game-container" ref="game" ></v-container>
     <v-overlay :value="menu" class="text-center">
@@ -106,10 +106,13 @@ export default {
   },
   methods: {
     startGame () {
-      //this.scene.start('BasicScene')
+      this.scene.start('BasicScene')
     },
     resumeGame () {
       this.basicScene.resume()
+    },
+    focus () {
+      console.log('Set Focus')
     }
   }
 }
