@@ -8,7 +8,7 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
     this.scene = scene
 
     this.setData('speed', this.sizeRocket)
-    this.setData('health', 3)
+    this.setData('health', 1)
     this.setData('scoreOnHit', 3)
     this.setData('scoreOnKill', 50)
 

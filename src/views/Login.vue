@@ -47,8 +47,8 @@ import firebase from 'firebase'
 export default {
   name: 'Home',
   data: () => ({
-    email: 'manuspeeders@googlemail.com',
-    password: 'test123',
+    email: '',
+    password: '',
     error: '',
     loading: false,
     remember: false

@@ -189,7 +189,7 @@ export default class BasicScene extends Scene {
       }
     })
 
-    if (Math.floor(Math.random() * 4000) < 2) {
+    if (Math.floor(Math.random() * 500) < 2) {
       this.spawnEnemy()
     }
 
