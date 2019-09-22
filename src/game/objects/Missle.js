@@ -1,9 +1,9 @@
 import Phaser from 'phaser'
 
 export default class Missle extends Phaser.GameObjects.Sprite {
-  constructor (scene, rocketBody, rocketSize) {
+  constructor (scene, rocketBody, blockwidth) {
     const size = 32
-    super(scene, rocketBody.x + (rocketSize / 2), rocketBody.y, 'missle')
+    super(scene, rocketBody.x + (blockwidth / 2), rocketBody.y, 'missle')
     this.size = size
     this.scene = scene
 

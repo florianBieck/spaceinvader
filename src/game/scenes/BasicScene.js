@@ -1,7 +1,11 @@
 import { Scene, Input } from 'phaser'
 import backgroundImage from '../../assets/logo.svg'
 import missleImage from '../../assets/icons8-missile.svg'
-import enemyImage from '../../assets/icons8-fighter.svg'
+import enemyAlphaImage from '../../assets/enemyAlpha.svg'
+import enemyBetaImage from '../../assets/enemyBeta.svg'
+import enemyGammaImage from '../../assets/enemyGamma.svg'
+import enemyDeltaImage from '../../assets/enemyDelta.svg'
+import enemyEpsilonImage from '../../assets/enemyEpsilon.svg'
 import explodeMissleImage from '../../assets/icons8-explosion.svg'
 import heartImage from '../../assets/icons8-heart.svg'
 import heartEmptyImage from '../../assets/icons8-heart-empty.svg'
@@ -10,13 +14,15 @@ import fireEmptyImage from '../../assets/icons8-fire-empty.svg'
 import rocketImage from '../../assets/icons8-space-shuttle.svg'
 import Rocket from '../objects/Rocket'
 import Missle from '../objects/Missle'
-import Enemy from '../objects/Enemy'
-import HealthPoint from '../objects/HealthPoint'
-import OverheatPoint from '../objects/OverheatPoint'
 import Background from '../objects/Background'
 import ExplosionMissle from '../objects/ExplosionMissle'
 import OverheatPoints from '../objects/OverheatPoints'
 import HealthPoints from '../objects/HealthPoints'
+import EnemyAlpha from "../objects/enemies/EnemyAlpha";
+import EnemyBeta from "../objects/enemies/EnemyBeta";
+import EnemyGamma from "../objects/enemies/EnemyGamma";
+import EnemyDelta from "../objects/enemies/EnemyDelta";
+import EnemyEpsilon from "../objects/enemies/EnemyEpsilon";
 
 export default class BasicScene extends Scene {
   constructor () {
@@ -27,7 +33,11 @@ export default class BasicScene extends Scene {
     this.load.image('background', backgroundImage)
     this.load.image('rocket', rocketImage)
     this.load.image('missle', missleImage)
-    this.load.image('enemy', enemyImage)
+    this.load.image('enemyAlpha', enemyAlphaImage)
+    this.load.image('enemyBeta', enemyBetaImage)
+    this.load.image('enemyGamma', enemyGammaImage)
+    this.load.image('enemyDelta', enemyDeltaImage)
+    this.load.image('enemyEpsilon', enemyEpsilonImage)
     this.load.image('explodeMissle', explodeMissleImage)
     this.load.image('heart', heartImage)
     this.load.image('heartEmpty', heartEmptyImage)
@@ -39,7 +49,12 @@ export default class BasicScene extends Scene {
     this.border = 12
     this.width = this.scale.width
     this.height = this.scale.height
-    this.sizeHeart = 32
+    this.fieldwidth = 12
+    this.fieldheight = 12
+    this.enemywidth = this.fieldwidth - 1
+    this.enemyheight = 4
+    this.blockwidth = this.width / this.fieldwidth
+    this.blockheight = this.height / this.fieldheight
 
     this.maxHealth = 5
     this.health = this.maxHealth
@@ -59,7 +74,7 @@ export default class BasicScene extends Scene {
     this.background = new Background(this, this.width, this.height)
     this.add.existing(this.background)
 
-    this.rocket = new Rocket(this, this.width, this.height)
+    this.rocket = new Rocket(this, this.width, this.height, this.blockwidth, this.blockheight)
 
     this.scoreText = this.add.text(this.border, this.border, 'SCORE: 0')
     this.scoringTexts = []
@@ -103,7 +118,7 @@ export default class BasicScene extends Scene {
 
   shootMissle () {
     if (!this.cooldownMissle && this.overheat <= this.overheatMax) {
-      const missle = new Missle(this, this.rocket.body, this.rocket.size)
+      const missle = new Missle(this, this.rocket.body, this.blockwidth)
       this.missles.add(missle)
       missle.move()
       this.cooldownMissle = true
@@ -132,9 +147,19 @@ export default class BasicScene extends Scene {
   }
 
   spawnEnemy () {
-    const enemy = new Enemy(this, this.width)
-    this.enemies.add(enemy)
-    enemy.move()
+    for (let x=1; x<this.enemywidth; x++){
+      for (let y=1; y<this.enemyheight; y++){
+        var enemy = null
+        switch (Math.floor(Math.random() * 2)) {
+          case 1: enemy = new EnemyBeta(this, this.blockwidth, this.blockheight, x, y); break;
+          case 2: enemy = new EnemyGamma(this, this.blockwidth, this.blockheight, x, y); break;
+          case 3: enemy = new EnemyDelta(this, this.blockwidth, this.blockheight, x, y); break;
+          default: enemy = new EnemyEpsilon(this, this.blockwidth, this.blockheight, x, y); break;
+        }
+        this.enemies.add(enemy)
+        // enemy.move()
+      }
+    }
   }
 
   isPaused () {
@@ -152,7 +177,7 @@ export default class BasicScene extends Scene {
     this.missles.getChildren().forEach(missle => missle.destroy(true))
   }
 
-  update (time, delta) {
+  handleInputs () {
     if (this.left.isDown) {
       this.rocket.moveLeft()
     }
@@ -172,6 +197,10 @@ export default class BasicScene extends Scene {
     if (this.ctrl.isDown) {
       this.ctrl.reset()
     }
+  }
+
+  update (time, delta) {
+    this.handleInputs()
 
     this.scoringTexts.forEach(scoringText => {
       scoringText.setY(scoringText.y + 2)
@@ -185,12 +214,20 @@ export default class BasicScene extends Scene {
         // eslint-disable-next-line no-return-assign
         setTimeout(() => this.rocket.setTint(tint), 100)
         enemy.destroy(true)
-        this.spawnEnemy()
       }
     })
 
     if (Math.floor(Math.random() * 500) < 2) {
-      this.spawnEnemy()
+      // this.spawnEnemy()
+      this.enemies.getChildren().forEach(enemy => {
+        enemy.move()
+      })
+    }
+
+    if (Math.floor(Math.random() * 500) < 1) {
+      var enemy = new EnemyAlpha(this, this.blockwidth, this.blockheight, 0, 0)
+      this.enemies.add(enemy)
+      enemy.move()
     }
 
     if (this.health <= 0) {
