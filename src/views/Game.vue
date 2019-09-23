@@ -34,7 +34,8 @@ export default {
       preloading: true,
       preloadMsg: 'Downloading...',
       menu: false,
-      game: null
+      game: null,
+      timestampStart: null
     }
   },
   async mounted () {
@@ -42,6 +43,7 @@ export default {
     this.preloading = false
     this.$nextTick(() => {
       this.game = main.launch()
+      this.timestampStart = new Date()
     })
   },
   computed: {
@@ -100,7 +102,9 @@ export default {
       firebase.firestore().collection('scores').add({
         iduser: firebase.auth().currentUser.uid,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        score: this.score
+        score: this.score,
+        level: this.basicScene.level,
+        time: new Date() - this.timestampStart
       })
     }
   },

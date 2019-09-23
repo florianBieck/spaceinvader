@@ -230,11 +230,11 @@ export default class BasicScene extends Scene {
       enemy.move()
     }
 
+    this.overheatingPoints.retexture(this.overheat)
+    this.hearts.retexture(this.health)
+
     if (this.health <= 0) {
       this.gameOver()
     }
-
-    this.overheatingPoints.retexture(this.overheat)
-    this.hearts.retexture(this.health)
   }
 }
