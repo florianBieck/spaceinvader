@@ -1,5 +1,17 @@
 # spaceinvader
 
+Welcome to my version of the legendary game "Space Invaders"!
+
+This project was created for the 09/2019 code competition hosted by it-talents and airbus:
+
+https://www.it-talents.de/foerderung/code-competition/airbus-code-competition-09-2019
+
+The technology stack consists of the following:
+* Vue.js
+* Vuetify
+* Phaser 3
+* Firebase
+
 ## Project setup
 ```
 npm install
