@@ -16,6 +16,10 @@ Take a look at the wiki for the current game instructions:
 
 [Wiki](https://github.com/florianBieck/spaceinvader/wiki)
 
+The game is hosted via firebase hosting on this URL:
+
+https://space-invaders.wtf
+
 ## Project setup
 ```
 npm install
