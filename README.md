@@ -12,6 +12,10 @@ The technology stack consists of the following:
 * Phaser 3
 * Firebase
 
+Take a look at the wiki for the current game instructions:
+
+[Wiki](https://github.com/florianBieck/spaceinvader/wiki)
+
 ## Project setup
 ```
 npm install
