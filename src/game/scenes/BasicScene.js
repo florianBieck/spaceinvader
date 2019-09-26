@@ -18,11 +18,12 @@ import Background from '../objects/Background'
 import ExplosionMissle from '../objects/ExplosionMissle'
 import OverheatPoints from '../objects/OverheatPoints'
 import HealthPoints from '../objects/HealthPoints'
-import EnemyAlpha from "../objects/enemies/EnemyAlpha";
-import EnemyBeta from "../objects/enemies/EnemyBeta";
-import EnemyGamma from "../objects/enemies/EnemyGamma";
-import EnemyDelta from "../objects/enemies/EnemyDelta";
-import EnemyEpsilon from "../objects/enemies/EnemyEpsilon";
+import EnemyAlpha from '../objects/enemies/EnemyAlpha'
+import EnemyBeta from '../objects/enemies/EnemyBeta'
+import EnemyGamma from '../objects/enemies/EnemyGamma'
+import EnemyDelta from '../objects/enemies/EnemyDelta'
+import EnemyEpsilon from '../objects/enemies/EnemyEpsilon'
+import Levels from '../levels/Levels'
 
 export default class BasicScene extends Scene {
   constructor () {
@@ -51,8 +52,6 @@ export default class BasicScene extends Scene {
     this.height = this.scale.height
     this.fieldwidth = 12
     this.fieldheight = 12
-    this.enemywidth = this.fieldwidth - 1
-    this.enemyheight = 4
     this.blockwidth = this.width / this.fieldwidth
     this.blockheight = this.height / this.fieldheight
 
@@ -63,7 +62,9 @@ export default class BasicScene extends Scene {
     this.overheat = 0
 
     this.score = 0
-    this.level = 0
+
+    this.levels = new Levels()
+    this.level = -1
 
     this.left = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.LEFT)
     this.right = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.RIGHT)
@@ -79,9 +80,6 @@ export default class BasicScene extends Scene {
     this.scoreText = this.add.text(this.border, this.border, 'SCORE: 0')
     this.scoringTexts = []
 
-    this.levelText = this.add.text(this.width, this.border, 'LEVEL: 0')
-    this.increaseLevel(1)
-
     this.hearts = new HealthPoints(this, this.width, this.height, this.maxHealth)
 
     this.overheatingPoints = new OverheatPoints(this, this.border, this.height, this.overheatMax)
@@ -90,7 +88,9 @@ export default class BasicScene extends Scene {
     this.enemies = this.physics.add.group()
     const collideMissleEnemy = this.physics.add.collider(this.missles, this.enemies, this.hitMissleEnemy, null, this)
     collideMissleEnemy.overlapOnly = true
-    this.spawnEnemy()
+
+    this.levelText = this.add.text(this.width, this.border, 'LEVEL: 0')
+    this.increaseLevel(1)
 
     this.time.addEvent({ delay: 1000, callback: this.moveEnemies, callbackScope: this, loop: true })
     this.time.addEvent({ delay: 100, callback: this.scoreOne, callbackScope: this, loop: true })
@@ -105,6 +105,7 @@ export default class BasicScene extends Scene {
     this.level += level
     this.levelText.setText('LEVEL: ' + this.level)
     this.levelText.setX(this.width - this.border * this.levelText.text.length)
+    this.spawnEnemy(this.levels.levels[this.level])
   }
 
   scoring (score) {
@@ -146,15 +147,26 @@ export default class BasicScene extends Scene {
     }
   }
 
-  spawnEnemy () {
-    for (let x=1; x<this.enemywidth; x++){
-      for (let y=1; y<this.enemyheight; y++){
+  spawnEnemy (level) {
+    const spawnSum = level.getSpawnSum()
+    const offsetX = Math.ceil((this.fieldwidth - level.fieldwidth) / 2)
+    const offsetY = 1
+    for (let x = 0; x < level.fieldwidth; x++) {
+      for (let y = 0; y < level.fieldheight; y++) {
         var enemy = null
-        switch (Math.floor(Math.random() * 2)) {
-          case 1: enemy = new EnemyBeta(this, this.blockwidth, this.blockheight, x, y); break;
-          case 2: enemy = new EnemyGamma(this, this.blockwidth, this.blockheight, x, y); break;
-          case 3: enemy = new EnemyDelta(this, this.blockwidth, this.blockheight, x, y); break;
-          default: enemy = new EnemyEpsilon(this, this.blockwidth, this.blockheight, x, y); break;
+        var spawn = Math.floor(Math.random() * spawnSum)
+        const spawns = level.fieldSpawns.getSpawns()
+        let i = 0
+        var spawnAdd = 0
+        while (spawn >= spawns[i] + spawnAdd) {
+          i++
+          spawnAdd += spawns[i]
+        }
+        switch (i) {
+          case 0: enemy = new EnemyBeta(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
+          case 1: enemy = new EnemyGamma(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
+          case 2: enemy = new EnemyDelta(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
+          case 3: enemy = new EnemyEpsilon(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
         }
         this.enemies.add(enemy)
         // enemy.move()

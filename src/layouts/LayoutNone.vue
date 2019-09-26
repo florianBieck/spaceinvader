@@ -5,9 +5,9 @@
 </template>
 
 <script>
-    export default {
-        name: 'LayoutNone'
-    }
+export default {
+  name: 'LayoutNone'
+}
 </script>
 
 <style scoped>
