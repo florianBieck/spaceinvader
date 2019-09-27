@@ -169,7 +169,6 @@ export default class BasicScene extends Scene {
           case 3: enemy = new EnemyEpsilon(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
         }
         this.enemies.add(enemy)
-        // enemy.move()
       }
     }
   }
@@ -229,17 +228,20 @@ export default class BasicScene extends Scene {
       }
     })
 
-    if (Math.floor(Math.random() * 500) < 2) {
-      // this.spawnEnemy()
+    if (Math.floor(Math.random() * this.levels.levels[this.level].move) === 1) {
       this.enemies.getChildren().forEach(enemy => {
         enemy.move()
       })
     }
 
-    if (Math.floor(Math.random() * 500) < 1) {
+    if (Math.floor(Math.random() * this.levels.levels[this.level].alphaSpawns) === 1) {
       var enemy = new EnemyAlpha(this, this.blockwidth, this.blockheight, 0, 0)
       this.enemies.add(enemy)
       enemy.move()
+    }
+
+    if (this.enemies.getChildren().length === 0) {
+      this.increaseLevel(1)
     }
 
     this.overheatingPoints.retexture(this.overheat)
