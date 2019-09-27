@@ -67,13 +67,19 @@ export default {
     },
     paused () {
       if (this.basicScene !== null) {
-        return this.basicScene.isPaused() && this.basicScene.health > 0
+        return this.basicScene.isPaused() && this.basicScene.health > 0 && !this.basicScene.isMaxLevel()
       }
       return false
     },
     stopped () {
       if (this.basicScene !== null) {
-        return this.basicScene.isPaused() && this.basicScene.health === 0
+        return this.basicScene.isPaused() && this.basicScene.health === 0 && !this.basicScene.isMaxLevel()
+      }
+      return false
+    },
+    finished () {
+      if (this.basicScene !== null) {
+        return this.basicScene.isPaused() && this.basicScene.health > 0 && this.basicScene.isMaxLevel()
       }
       return false
     },
@@ -84,11 +90,14 @@ export default {
       return 0
     },
     getMenuMsg () {
-      if (this.paused && !this.stopped) {
+      if (this.paused && !this.stopped && !this.finished()) {
         return 'PAUSE'
       }
-      if (!this.paused && this.stopped) {
+      if (!this.paused && this.stopped && !this.finished()) {
         return 'GAME OVER! SCORE: ' + this.score
+      }
+      if (!this.paused && !this.stopped && this.finished) {
+        return 'MAX LEVEL! SCORE: ' + this.score
       }
       return ''
     }
@@ -99,13 +108,11 @@ export default {
     },
     stopped (val) {
       this.menu = val
-      firebase.firestore().collection('scores').add({
-        iduser: firebase.auth().currentUser.uid,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        score: this.score,
-        level: this.basicScene.level,
-        time: new Date() - this.timestampStart
-      })
+      this.addScore()
+    },
+    finished (val) {
+      this.menu = val
+      this.addScore()
     }
   },
   methods: {
@@ -117,6 +124,15 @@ export default {
     },
     focus () {
       console.log('Set Focus')
+    },
+    addScore () {
+      firebase.firestore().collection('scores').add({
+        iduser: firebase.auth().currentUser.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        score: this.score,
+        level: this.basicScene.level,
+        time: new Date() - this.timestampStart
+      })
     }
   }
 }

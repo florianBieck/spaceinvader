@@ -103,9 +103,14 @@ export default class BasicScene extends Scene {
 
   increaseLevel (level) {
     this.level += level
-    this.levelText.setText('LEVEL: ' + this.level)
-    this.levelText.setX(this.width - this.border * this.levelText.text.length)
-    this.spawnEnemy(this.levels.levels[this.level])
+    if (this.isMaxLevel()) {
+      this.gameOver()
+    }
+    else {
+      this.levelText.setText('LEVEL: ' + this.level)
+      this.levelText.setX(this.width - this.border * this.levelText.text.length)
+      this.spawnEnemy(this.levels.levels[this.level])
+    }
   }
 
   scoring (score) {
@@ -177,6 +182,14 @@ export default class BasicScene extends Scene {
     return this.scene.isPaused()
   }
 
+  isMaxLevel () {
+    return this.level === this.levels.levels.length
+  }
+
+  isBeforeMaxLevel () {
+    return this.level === this.levels.levels.length - 1
+  }
+
   resume () {
     // this.scene.resume()
     this.esc.reset()
@@ -240,7 +253,7 @@ export default class BasicScene extends Scene {
       enemy.move()
     }
 
-    if (this.enemies.getChildren().length === 0) {
+    if (this.enemies.getChildren().length === 0 && !this.isMaxLevel()) {
       this.increaseLevel(1)
     }
 
