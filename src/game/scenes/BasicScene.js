@@ -92,21 +92,26 @@ export default class BasicScene extends Scene {
     this.levelText = this.add.text(this.width, this.border, 'LEVEL: 0')
     this.increaseLevel(1)
 
-    this.time.addEvent({ delay: 1000, callback: this.moveEnemies, callbackScope: this, loop: true })
-    this.time.addEvent({ delay: 100, callback: this.scoreOne, callbackScope: this, loop: true })
+    this.gametimer = 0
+    this.gametimerText = this.add.text(this.width / 2 - ((this.gametimer + '').length * 8), this.border, 'TIME: 00:00')
+
+    this.time.addEvent({ delay: 1000, callback: this.timing, callbackScope: this, loop: true })
   }
 
-  scoreOne () {
-    this.score++
-    this.scoreText.setText('SCORE: ' + this.score)
+  timing () {
+    this.gametimer++
+    const m = Math.floor(this.gametimer / 60)
+    const s = this.gametimer % 60
+    const out = 'TIME: ' + ((m + '').length > 1 ? m : '0' + m) + ':' + ((s + '').length > 1 ? s : '0' + s)
+    this.gametimerText.setX(this.width / 2 - (out.length * 4))
+    this.gametimerText.setText(out)
   }
 
   increaseLevel (level) {
     this.level += level
     if (this.isMaxLevel()) {
       this.gameOver()
-    }
-    else {
+    } else {
       this.levelText.setText('LEVEL: ' + this.level)
       this.levelText.setX(this.width - this.border * this.levelText.text.length)
       this.spawnEnemy(this.levels.levels[this.level])
@@ -191,7 +196,7 @@ export default class BasicScene extends Scene {
   }
 
   resume () {
-    // this.scene.resume()
+    this.scene.resume()
     this.esc.reset()
   }
 

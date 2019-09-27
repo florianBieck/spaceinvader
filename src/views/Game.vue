@@ -43,7 +43,6 @@ export default {
     this.preloading = false
     this.$nextTick(() => {
       this.game = main.launch()
-      this.timestampStart = new Date()
     })
   },
   computed: {
@@ -90,10 +89,10 @@ export default {
       return 0
     },
     getMenuMsg () {
-      if (this.paused && !this.stopped && !this.finished()) {
+      if (this.paused && !this.stopped && !this.finished) {
         return 'PAUSE'
       }
-      if (!this.paused && this.stopped && !this.finished()) {
+      if (!this.paused && this.stopped && !this.finished) {
         return 'GAME OVER! SCORE: ' + this.score
       }
       if (!this.paused && !this.stopped && this.finished) {
@@ -131,7 +130,7 @@ export default {
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         score: this.score,
         level: this.basicScene.level,
-        time: new Date() - this.timestampStart
+        time: this.basicScene.gametimer
       })
     }
   }
