@@ -72,7 +72,7 @@ export default {
     },
     stopped () {
       if (this.basicScene !== null) {
-        return this.basicScene.isPaused() && this.basicScene.health === 0 && !this.basicScene.isMaxLevel()
+        return this.basicScene.isPaused() && this.basicScene.health <= 0 && !this.basicScene.isMaxLevel()
       }
       return false
     },
@@ -133,6 +133,19 @@ export default {
         time: this.basicScene.gametimer
       })
     }
+  },
+  async beforeRouteEnter (to, from, next) {
+    next(inst => {
+      if (inst.game !== null) {
+        inst.resumeGame()
+      }
+    })
+  },
+  beforeRouteLeave (to, from, next) {
+    if (this.basicScene !== null) {
+      this.basicScene.scene.pause('BasicScene')
+    }
+    next()
   }
 }
 </script>

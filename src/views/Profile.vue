@@ -13,7 +13,7 @@
                 <v-layout align-center justify-center>
                   <v-avatar color="black" size="256">
                     <img :src="imageUrl === null ? profilePic : imageUrl" v-if="profilePic !== null || imageUrl !== null"/>
-                    <v-icon color="white" size="256" v-if="profilePic === null || imageUrl === null">person</v-icon>
+                    <v-icon color="white" size="256" v-if="profilePic === null && imageUrl === null">person</v-icon>
                   </v-avatar>
                 </v-layout>
               </v-container>
@@ -71,10 +71,12 @@ export default {
     save () {
       if (this.editable) {
         firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({ displayname: this.displayName })
-        firebase.storage().ref().child('images/users/' + firebase.auth().currentUser.uid).put(this.imageFile)
-          .then((snapshot) => {
-            console.log('Uploaded!')
-          })
+        if (this.imageFile.length > 0) {
+          firebase.storage().ref().child('images/users/' + firebase.auth().currentUser.uid).put(this.imageFile)
+            .then((snapshot) => {
+              console.log('Uploaded!')
+            })
+        }
       }
     },
     uploadImage (e) {

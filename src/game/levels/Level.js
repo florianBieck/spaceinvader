@@ -1,9 +1,10 @@
 export default class Level {
-  constructor (fieldwidth, fieldheight, alphaSpawns, move, fieldSpawns) {
+  constructor (fieldwidth, fieldheight, alphaSpawns, moveX, moveY, fieldSpawns) {
     this.fieldwidth = fieldwidth
     this.fieldheight = fieldheight
     this.alphaSpawns = alphaSpawns
-    this.move = move
+    this.moveX = moveX
+    this.moveY = moveY
     this.fieldSpawns = fieldSpawns
   }
 

@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 
 export default class Rocket extends Phaser.GameObjects.Sprite {
   constructor (scene, width, height, blockwidth, blockheight) {
-    super(scene, width / 2, height - (blockheight), 'rocket')
+    super(scene, width / 2, height, 'rocket')
     this.scene = scene
 
     this.setData('speed', 50)
@@ -15,8 +15,6 @@ export default class Rocket extends Phaser.GameObjects.Sprite {
     this.setDisplaySize(blockwidth, blockheight)
     this.height = blockheight
     this.width = blockwidth
-    this.body.setSize(this.width, this.height)
-    this.setAngle(-90)
     this.body.setCollideWorldBounds(true, 0, 0)
   }
 

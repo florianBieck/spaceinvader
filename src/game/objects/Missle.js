@@ -7,7 +7,7 @@ export default class Missle extends Phaser.GameObjects.Sprite {
     this.size = size
     this.scene = scene
 
-    this.setData('speed', -500)
+    this.setData('speed', -800)
     this.setData('blockwidth', 1)
     this.setData('blockheight', 1)
 
@@ -20,6 +20,13 @@ export default class Missle extends Phaser.GameObjects.Sprite {
   }
 
   move () {
-    this.body.setVelocityY(-500)
+    this.body.setVelocityY(this.data.get('speed'))
+    this.body.setCollideWorldBounds(true)
+    this.body.onWorldBounds = true
+    this.body.world.on('worldbounds', (body) => {
+      if (body.gameObject === this) {
+        this.destroy(true)
+      }
+    })
   }
 }

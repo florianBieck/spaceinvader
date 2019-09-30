@@ -1,29 +1,45 @@
 import { Scene, Input } from 'phaser'
-import backgroundImage from '../../assets/logo.svg'
-import missleImage from '../../assets/icons8-missile.svg'
+import backgroundImage from '../../assets/background.svg'
+import missleImage from '../../assets/missle.svg'
+import bonusHealthImage from '../../assets/bonusHealth.svg'
 import enemyAlphaImage from '../../assets/enemyAlpha.svg'
 import enemyBetaImage from '../../assets/enemyBeta.svg'
 import enemyGammaImage from '../../assets/enemyGamma.svg'
 import enemyDeltaImage from '../../assets/enemyDelta.svg'
 import enemyEpsilonImage from '../../assets/enemyEpsilon.svg'
-import explodeMissleImage from '../../assets/icons8-explosion.svg'
-import heartImage from '../../assets/icons8-heart.svg'
-import heartEmptyImage from '../../assets/icons8-heart-empty.svg'
-import fireImage from '../../assets/icons8-fire.svg'
-import fireEmptyImage from '../../assets/icons8-fire-empty.svg'
-import rocketImage from '../../assets/icons8-space-shuttle.svg'
+import missleAlphaImage from '../../assets/missleAlpha.svg'
+import missleBetaImage from '../../assets/missleBeta.svg'
+import missleGammaImage from '../../assets/missleGamma.svg'
+import missleDeltaImage from '../../assets/missleDelta.svg'
+import explodeMissleImage from '../../assets/explodeMissle.svg'
+import healthpointImage from '../../assets/healthpoint.svg'
+import healthpointEmptyImage from '../../assets/healthpointEmpty.svg'
+import overheatpointImage from '../../assets/overheatpoint.svg'
+import overheatpointEmptyImage from '../../assets/overheatpointEmpty.svg'
+import rocketImage from '../../assets/rocket.svg'
+import backgroundAudio from '../../assets/audio/Background.wav'
+import bonusHealthAudio from '../../assets/audio/BonusHealth.wav'
+import enemyDeathAudio from '../../assets/audio/EnemyDeath.wav'
+import enemyHitAudio from '../../assets/audio/EnemyHit.wav'
+import enemyMoveAudio from '../../assets/audio/EnemyMove.wav'
+import levelUpAudio from '../../assets/audio/LevelUp.wav'
+import loseAudio from '../../assets/audio/Lose.wav'
+import playerHitAudio from '../../assets/audio/PlayerHit.wav'
+import shotAudio from '../../assets/audio/Shot.wav'
+import victoryAudio from '../../assets/audio/Victory.wav'
 import Rocket from '../objects/Rocket'
 import Missle from '../objects/Missle'
 import Background from '../objects/Background'
 import ExplosionMissle from '../objects/ExplosionMissle'
-import OverheatPoints from '../objects/OverheatPoints'
-import HealthPoints from '../objects/HealthPoints'
+import OverheatPoints from '../objects/overheatpoint/OverheatPoints'
+import HealthPoints from '../objects/healthpoint/HealthPoints'
 import EnemyAlpha from '../objects/enemies/EnemyAlpha'
 import EnemyBeta from '../objects/enemies/EnemyBeta'
 import EnemyGamma from '../objects/enemies/EnemyGamma'
 import EnemyDelta from '../objects/enemies/EnemyDelta'
 import EnemyEpsilon from '../objects/enemies/EnemyEpsilon'
 import Levels from '../levels/Levels'
+import BonusHealth from '../objects/bonus/BonusHealth'
 
 export default class BasicScene extends Scene {
   constructor () {
@@ -39,11 +55,27 @@ export default class BasicScene extends Scene {
     this.load.image('enemyGamma', enemyGammaImage)
     this.load.image('enemyDelta', enemyDeltaImage)
     this.load.image('enemyEpsilon', enemyEpsilonImage)
+    this.load.image('missleAlpha', missleAlphaImage)
+    this.load.image('missleBeta', missleBetaImage)
+    this.load.image('missleGamma', missleGammaImage)
+    this.load.image('missleDelta', missleDeltaImage)
     this.load.image('explodeMissle', explodeMissleImage)
-    this.load.image('heart', heartImage)
-    this.load.image('heartEmpty', heartEmptyImage)
-    this.load.image('fire', fireImage)
-    this.load.image('fireEmpty', fireEmptyImage)
+    this.load.image('heart', healthpointImage)
+    this.load.image('heartEmpty', healthpointEmptyImage)
+    this.load.image('overheatpoint', overheatpointImage)
+    this.load.image('overheatpointEmpty', overheatpointEmptyImage)
+    this.load.image('bonusHealth', bonusHealthImage)
+
+    this.load.audio('background', backgroundAudio)
+    this.load.audio('bonusHealth', bonusHealthAudio)
+    this.load.audio('enemyDeath', enemyDeathAudio)
+    this.load.audio('enemyHit', enemyHitAudio)
+    this.load.audio('enemyMove', enemyMoveAudio)
+    this.load.audio('levelUp', levelUpAudio)
+    this.load.audio('lose', loseAudio)
+    this.load.audio('playerHit', playerHitAudio)
+    this.load.audio('shot', shotAudio)
+    this.load.audio('victory', victoryAudio)
   }
 
   create () {
@@ -89,20 +121,44 @@ export default class BasicScene extends Scene {
     const collideMissleEnemy = this.physics.add.collider(this.missles, this.enemies, this.hitMissleEnemy, null, this)
     collideMissleEnemy.overlapOnly = true
 
-    this.levelText = this.add.text(this.width, this.border, 'LEVEL: 0')
+    this.misslesByEnemy = this.physics.add.group()
+    const collideMissleByEnemyRocket = this.physics.add.collider(this.misslesByEnemy, this.rocket, this.hitMissleRocket, null, this)
+    collideMissleByEnemyRocket.overlapOnly = true
+
+    this.bonusHealths = this.physics.add.group()
+    const collideBonusHealthRocket = this.physics.add.collider(this.bonusHealths, this.rocket, this.hitBonusHealthRocket, null, this)
+    collideBonusHealthRocket.overlapOnly = true
+
+    this.levelText = this.add.text(this.width, this.border, 'LEVEL')
     this.increaseLevel(1)
 
     this.gametimer = 0
-    this.gametimerText = this.add.text(this.width / 2 - ((this.gametimer + '').length * 8), this.border, 'TIME: 00:00')
-
+    this.gametimerText = this.add.text(this.width / 2 - ((this.gametimer + '').length * 8), this.border, 'TIME')
+    this.leveltimer = 0
     this.time.addEvent({ delay: 1000, callback: this.timing, callbackScope: this, loop: true })
+
+    this.sound.play('background', { loop: true, volume: 0.5 })
+    this.events.on('pause', () => {
+      this.sound.pauseAll()
+    })
+    this.events.on('resume', () => {
+      this.sound.resumeAll()
+    })
+    /* this.events.on('destroy', () => {
+      this.sound.destroy()
+    }) */
   }
 
   timing () {
     this.gametimer++
-    const m = Math.floor(this.gametimer / 60)
-    const s = this.gametimer % 60
-    const out = 'TIME: ' + ((m + '').length > 1 ? m : '0' + m) + ':' + ((s + '').length > 1 ? s : '0' + s)
+    this.leveltimer++
+    const mg = Math.floor(this.gametimer / 60)
+    const ml = Math.floor(this.leveltimer / 60)
+    const sg = this.gametimer % 60
+    const sl = this.leveltimer % 60
+    const tg = ((mg + '').length > 1 ? mg : '0' + mg) + ':' + ((sg + '').length > 1 ? sg : '0' + sg)
+    const tl = ((ml + '').length > 1 ? ml : '0' + ml) + ':' + ((sl + '').length > 1 ? sl : '0' + sl)
+    const out = 'IN GAME: ' + tg + ' / IN LEVEL: ' + tl
     this.gametimerText.setX(this.width / 2 - (out.length * 4))
     this.gametimerText.setText(out)
   }
@@ -110,11 +166,17 @@ export default class BasicScene extends Scene {
   increaseLevel (level) {
     this.level += level
     if (this.isMaxLevel()) {
+      this.sound.play('victory')
       this.gameOver()
     } else {
+      this.sound.play('levelUp')
       this.levelText.setText('LEVEL: ' + this.level)
       this.levelText.setX(this.width - this.border * this.levelText.text.length)
       this.spawnEnemy(this.levels.levels[this.level])
+      this.leveltimer = 0
+      if (this.level > 3 && Math.floor(Math.random() * 5) === 1) {
+        this.spawnBonusHealth()
+      }
     }
   }
 
@@ -129,6 +191,7 @@ export default class BasicScene extends Scene {
 
   shootMissle () {
     if (!this.cooldownMissle && this.overheat <= this.overheatMax) {
+      this.sound.play('shot', { volume: 0.4 })
       const missle = new Missle(this, this.rocket.body, this.blockwidth)
       this.missles.add(missle)
       missle.move()
@@ -148,19 +211,55 @@ export default class BasicScene extends Scene {
     missle.destroy(true)
     this.scoring(enemy.data.get('scoreOnHit'))
 
+    this.sound.play('enemyHit', { volume: 0.4 })
+
     new ExplosionMissle(this, enemy)
 
     enemy.setData('health', enemy.data.get('health') - 1)
     if (enemy.data.get('health') <= 0) {
-      this.scoring(enemy.data.get('scoreOnKill'))
+      const factor = 30
+      const exp = this.leveltimer > factor ? factor : this.leveltimer
+      const timeMalus = Math.pow(enemy.data.get('scoreOnKill') / 4 * 3, Math.floor(exp / factor))
+      const score = Math.round(enemy.data.get('scoreOnKill') - timeMalus)
+      this.scoring(score)
       enemy.destroy(true)
+      this.sound.play('enemyDeath', { volume: 0.4 })
+    }
+  }
+
+  hitMissleRocket (rocket, missle) {
+    this.health -= missle.data.get('damage')
+    missle.destroy(true)
+
+    this.sound.play('playerHit', { volume: 0.4 })
+
+    new ExplosionMissle(this, rocket.body.position)
+
+    this.tint(this.rocket)
+
+    this.health = this.health < 0 ? 0 : this.health
+    this.hearts.retexture(this.health)
+
+    if (this.health <= 0) {
+      this.gameOver()
+    }
+  }
+
+  hitBonusHealthRocket (rocket, bonusHealth) {
+    bonusHealth.destroy(true)
+
+    this.sound.play('bonusHealth')
+
+    if (this.health < this.maxHealth) {
+      this.health++
+      this.hearts.retexture(this.health)
     }
   }
 
   spawnEnemy (level) {
     const spawnSum = level.getSpawnSum()
     const offsetX = Math.ceil((this.fieldwidth - level.fieldwidth) / 2)
-    const offsetY = 1
+    const offsetY = 0
     for (let x = 0; x < level.fieldwidth; x++) {
       for (let y = 0; y < level.fieldheight; y++) {
         var enemy = null
@@ -173,14 +272,19 @@ export default class BasicScene extends Scene {
           spawnAdd += spawns[i]
         }
         switch (i) {
-          case 0: enemy = new EnemyBeta(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
-          case 1: enemy = new EnemyGamma(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
-          case 2: enemy = new EnemyDelta(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
-          case 3: enemy = new EnemyEpsilon(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY); break
+          case 0: enemy = new EnemyBeta(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY, this.misslesByEnemy); break
+          case 1: enemy = new EnemyGamma(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY, this.misslesByEnemy); break
+          case 2: enemy = new EnemyDelta(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY, this.misslesByEnemy); break
+          case 3: enemy = new EnemyEpsilon(this, this.blockwidth, this.blockheight, x + offsetX, y + offsetY, this.misslesByEnemy); break
         }
         this.enemies.add(enemy)
       }
     }
+  }
+
+  tint (object) {
+    object.setTint(0xff0000)
+    this.time.addEvent({ delay: 100, callback: object.clearTint, callbackScope: object, loop: false })
   }
 
   isPaused () {
@@ -223,9 +327,37 @@ export default class BasicScene extends Scene {
       this.scene.pause('BasicScene')
       this.esc.reset()
     }
-    if (this.ctrl.isDown) {
-      this.ctrl.reset()
-    }
+  }
+
+  moveEnemiesX () {
+    this.enemies.getChildren().forEach(enemy => {
+      if ((enemy.data.get('facing') === 0 && enemy.body.position.x + enemy.width >= this.width) ||
+          (enemy.data.get('facing') === 1 && enemy.body.position.x - enemy.width <= 0)) {
+        enemy.data.set('facing', enemy.data.get('facing') === 0 ? 1 : 0)
+      }
+      enemy.moveX()
+      this.sound.play('enemyMove', { volume: 0.1 })
+    })
+  }
+
+  moveEnemiesY () {
+    this.enemies.getChildren().forEach(enemy => {
+      enemy.moveY()
+      this.sound.play('enemyMove', { volume: 0.1 })
+    })
+  }
+
+  spawnAlpha () {
+    var enemy = new EnemyAlpha(this, this.blockwidth, this.blockheight, 0, 0, this.misslesByEnemy)
+    this.enemies.add(enemy)
+    enemy.startMovement()
+  }
+
+  spawnBonusHealth () {
+    const bonusHealthSize = 32
+    var bonus = new BonusHealth(this, Math.floor(Math.random() * (this.width - bonusHealthSize)), bonusHealthSize)
+    this.bonusHealths.add(bonus)
+    bonus.startMovement()
   }
 
   update (time, delta) {
@@ -238,25 +370,30 @@ export default class BasicScene extends Scene {
     this.enemies.getChildren().forEach(enemy => {
       if (enemy.y >= this.height) {
         this.health = this.health - 1
-        const tint = this.rocket.tint
-        this.rocket.setTint(0xff0000)
-        // eslint-disable-next-line no-return-assign
-        setTimeout(() => this.rocket.setTint(tint), 100)
+        this.tint(this.rocket)
         enemy.destroy(true)
       }
     })
 
-    if (Math.floor(Math.random() * this.levels.levels[this.level].move) === 1) {
-      this.enemies.getChildren().forEach(enemy => {
-        enemy.move()
-      })
+    if (Math.floor(Math.random() * this.levels.levels[this.level].moveX) === 1) {
+      this.moveEnemiesX()
+    }
+
+    if (Math.floor(Math.random() * this.levels.levels[this.level].moveY) === 1) {
+      this.moveEnemiesY()
     }
 
     if (Math.floor(Math.random() * this.levels.levels[this.level].alphaSpawns) === 1) {
-      var enemy = new EnemyAlpha(this, this.blockwidth, this.blockheight, 0, 0)
-      this.enemies.add(enemy)
-      enemy.move()
+      this.spawnAlpha()
     }
+
+    if (Math.floor(Math.random() * this.levels.levels[this.level].alphaSpawns) === 1) {
+
+    }
+
+    this.enemies.getChildren().forEach(enemy => {
+      enemy.shoot()
+    })
 
     if (this.enemies.getChildren().length === 0 && !this.isMaxLevel()) {
       this.increaseLevel(1)
@@ -266,6 +403,7 @@ export default class BasicScene extends Scene {
     this.hearts.retexture(this.health)
 
     if (this.health <= 0) {
+      this.sound.play('lose')
       this.gameOver()
     }
   }

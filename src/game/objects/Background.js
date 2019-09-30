@@ -8,6 +8,7 @@ export default class Background extends Phaser.GameObjects.Image {
     scene.add.existing(this, false)
 
     this.setDisplaySize(width, height)
-    this.setVisible(false)
+    // this.setVisible(false)
+    this.setAlpha(0.5)
   }
 }

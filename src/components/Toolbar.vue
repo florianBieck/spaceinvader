@@ -88,9 +88,10 @@ export default {
   },
   mounted () {
     if (firebase.auth().currentUser) {
-      firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).get().then(user => {
-        this.displayName = user.data().displayname
-      })
+      firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
+        .onSnapshot(user => {
+          this.displayName = user.data().displayname
+        })
       firebase.firestore().collection('scores')
         .where('iduser', '==', firebase.auth().currentUser.uid)
         .orderBy('score', 'desc')

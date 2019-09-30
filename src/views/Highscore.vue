@@ -9,12 +9,10 @@
         <v-container fluid>
           <v-data-table :headers="headers" :items="scores" :search="search">
             <template v-slot:item.img="{ item }">
-              <v-avatar color="black" size="32">
-                <v-icon color="white">person</v-icon>
-              </v-avatar>
+              <HighscoreImage v-bind:iduser="item.iduser"/>
             </template>
             <template v-slot:item.user="{ item }">
-              {{item.iduser}}
+              <HighscoreUsername v-bind:iduser="item.iduser"/>
             </template>
             <template v-slot:item.timestamp="{ item }">
               {{item.timestamp.toDate().toLocaleString()}}
@@ -28,8 +26,11 @@
 
 <script>
 import firebase from 'firebase'
+import HighscoreUsername from '../components/HighscoreUsername'
+import HighscoreImage from '../components/HighscoreImage'
 export default {
   name: 'Highscore',
+  components: { HighscoreUsername, HighscoreImage },
   data () {
     return {
       headers: [
@@ -50,6 +51,14 @@ export default {
         {
           text: 'Score',
           value: 'score'
+        },
+        {
+          text: 'Level',
+          value: 'level'
+        },
+        {
+          text: 'Time (s)',
+          value: 'time'
         }
       ],
       scores: [],
